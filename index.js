@@ -14,6 +14,7 @@ exports.handler = (event) => {
 		let container = {
 			req: {
 				id: event.id,
+				ami_name: event.ami_name,
 				regions: event.regions
 			},
 			//
@@ -24,7 +25,7 @@ exports.handler = (event) => {
             //
             //  Holds the raw result from AWS, which we have to clean up.
             //
-            mixed_amis: null,
+            mixed_amis: [],
 			//
 			//	This array will hold the resoult of the previous query
 			//	with tall the IDs that we've got back with the region.
@@ -93,6 +94,7 @@ function execute_the_queries(container)
 		//	1.	Make the variable shorter.
 		//
 		let id = container.req.id;
+		let ami_name = container.req.ami_name;
 
 		//
 		//	2.	Looping over all the regions.
@@ -102,7 +104,7 @@ function execute_the_queries(container)
 			//
 			//	1.	Make all the individual queris.
 			//
-			container.promises.push(query(region, id));
+			container.promises.push(query(region, id, ami_name));
 
 		})
 
@@ -126,25 +128,24 @@ function collect_all_the_promises(container)
 		//
 		//	1.	Exectue all the prosmies.
 		//
-		Promise.all(container.promises)
+		Promise.allSettled(container.promises)
 			.then(function(values) {
 
-				//
-                //	1.	Save all that we get as is, and we sort the result
-                //      later.
-				//
-				container.mixed_amis = values;
+                values.forEach(function(value) {
+
+                    if(value.status == 'fulfilled')
+                    {
+                        container.mixed_amis.push(value.value)
+                    }
+
+                })
 
 				//
 				//	->	Move to the next promise.
 				//
 				return resolve(container);
 
-			}).catch(function(error){
-
-				return reject(error);
-
-			});
+			})
 
 	});
 }
@@ -238,7 +239,7 @@ function formatting(container)
 //	This is a standalone Promise, used to make individual queris to
 //	AWS using Promise All.
 //
-function query(region, id)
+function query(region, id, ami_name)
 {
 	return new Promise(function(resolve, reject) {
 
@@ -251,7 +252,7 @@ function query(region, id)
 		//
 		let ec2 = new AWS.EC2({
 			apiVersion: '2016-11-15',
-			region: region
+            region: region
 		});
 
 		//
@@ -262,7 +263,7 @@ function query(region, id)
 				{
 					Name: 'name',
 					Values: [
-						'*' + id + '*',
+						ami_name + "-" + id + '*',
 					]
 				}
 			],
@@ -281,7 +282,7 @@ function query(region, id)
 			//
 			if(error)
 			{
-				console.info(params);
+				console.info(" >>> Missing region: " + region);
 				return reject(error);
             }
 

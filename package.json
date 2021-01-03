@@ -3,6 +3,6 @@
     "locally": "env $(cat .env) node -e \"require('./.loader.js')\""
   },
   "dependencies": {
-    "aws-sdk": "^2.601.0"
+    "aws-sdk": "^2.778.0"
   }
 }
