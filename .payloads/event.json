@@ -1,6 +1,6 @@
 {
-    "id": "c10b67cd-cfe2-4a9f-8397-272d95b026cf",
-    "ami_name": "zer0x4447-x86-product-sftp 2020-12-24T11-36-50.352Z",
+    "id": "05768ca5-fd4d-4b2b-90e8-32695b931f12",
+    "ami_name": "Zer0x4447-x86-foundation-product-rsyslog 2021-01-30T17-02-10.143Z",
     "regions": [
         "us-east-2",
         "us-east-1",
